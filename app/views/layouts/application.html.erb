@@ -10,6 +10,18 @@
   </head>
 
   <body>
+
+    <% flash.each do |key, message| %>
+      <div>
+        <%= message %>
+      </div>
+    <% end %>
+    
+    <nav>
+      <%= link_to "Tasks Index", tasks_path, id: "tasks-index" %>
+      <%= link_to "New Task", new_task_path, id: "new-task" %>
+    </nav>
+
     <%= yield %>
   </body>
 </html>
