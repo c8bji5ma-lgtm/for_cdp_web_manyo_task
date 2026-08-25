@@ -1,3 +1,30 @@
+ja:
+  activerecord:
+    models:
+      task: タスク
+
+    attributes:
+      task:
+        title: タイトル
+        content: 内容
+        created_at: 作成日時
+
+    errors:
+      models:
+        task:
+          attributes:
+            title:
+              blank: を入力してください
+            content:
+              blank: を入力してください
+
+  errors:
+    format: "%{attribute}%{message}"
+
+  navigation:
+    tasks_index: タスク一覧
+    new_task: タスクを登録する
+
   tasks:
     index:
       title: タスク一覧ページ
@@ -20,3 +47,9 @@
       title: タスク編集ページ
       submit: 更新する
       back: 戻る
+
+  flash:
+    tasks:
+      create: タスクを登録しました
+      update: タスクを更新しました
+      destroy: タスクを削除しました    

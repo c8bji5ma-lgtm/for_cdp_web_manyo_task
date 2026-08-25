@@ -1,6 +1,6 @@
 class TasksController < ApplicationController
   def index
-    @tasks = Task.all
+    @tasks = Task.order(created_at: :desc)
   end
 
   def show
@@ -15,7 +15,7 @@ class TasksController < ApplicationController
     @task = Task.new(task_params)
 
     if @task.save
-      redirect_to tasks_path, notice: "Task was successfully created."
+      redirect_to tasks_path, notice: I18n.t("flash.tasks.create")
     else
       render :new, status: :unprocessable_entity
     end
@@ -29,7 +29,7 @@ class TasksController < ApplicationController
     @task = Task.find(params[:id])
 
     if @task.update(task_params)
-      redirect_to task_path(@task), notice: "Task was successfully updated."
+      redirect_to task_path(@task), notice: I18n.t("flash.tasks.update")
     else
       render :edit, status: :unprocessable_entity
     end
@@ -39,7 +39,7 @@ class TasksController < ApplicationController
     @task = Task.find(params[:id])
     @task.destroy
 
-    redirect_to tasks_path, notice: "Task was successfully destroyed."
+    redirect_to tasks_path, notice: I18n.t("flash.tasks.destroy")
   end
 
   private
