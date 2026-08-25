@@ -17,6 +17,10 @@ RSpec.describe 'タスク管理機能', type: :system do
   end
 
   describe '一覧表示機能' do
+    before do
+      Task.delete_all
+    end
+
     let!(:first_task) do
       FactoryBot.create(
         :task,
