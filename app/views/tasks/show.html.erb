@@ -11,6 +11,21 @@
 </p>
 
 <p>
+  <strong>終了期限:</strong>
+  <%= @task.deadline_on %>
+</p>
+
+<p>
+  <strong>優先度:</strong>
+  <%= @task.priority %>
+</p>
+
+<p>
+  <strong>ステータス:</strong>
+  <%= @task.status %>
+</p>
+
+<p>
   <strong><%= Task.human_attribute_name(:created_at) %>:</strong>
   <%= @task.created_at %>
 </p>
