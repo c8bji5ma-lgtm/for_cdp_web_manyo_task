@@ -5,7 +5,7 @@ set -uo pipefail
 APP_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STEP="${1:-}"
 EVALUATOR_REPOSITORY="${MANYO_EVALUATOR_REPOSITORY:-https://github.com/diveintocode-corp/cdp_web_manyo_evaluation_code.git}"
-EVALUATOR_REF="${MANYO_EVALUATOR_REF:-rails-8.1-v1.0.0}"
+EVALUATOR_REF="${MANYO_EVALUATOR_REF:-35d72d323934e15868280a264c3de4318525adca}"
 FEEDBACK_FILE="${APP_ROOT}/tmp/manyo_evaluation_feedback.md"
 
 usage() {
@@ -28,6 +28,14 @@ $1"
   exit 2
 }
 
+ruby_version_supported() {
+  ruby -rrubygems -e '
+    requirement = Gem::Requirement.new(">= 4.0.0", "< 4.1.0")
+    version = Gem::Version.new(ARGV.fetch(0))
+    exit(requirement.satisfied_by?(version) ? 0 : 1)
+  ' "$1"
+}
+
 case "$STEP" in
   step1|step2|step3|step4|step5)
     ;;
@@ -46,8 +54,8 @@ command -v ruby >/dev/null 2>&1 || fail_check "Rubyをインストールして�
 command -v bundle >/dev/null 2>&1 || fail_check "Bundlerをインストールしてください。"
 
 CURRENT_RUBY_VERSION="$(ruby -e 'print RUBY_VERSION')"
-if [[ "$CURRENT_RUBY_VERSION" != '4.0.5' ]]; then
-  fail_check "Ruby 4.0.5を使用してください。現在のバージョンは${CURRENT_RUBY_VERSION}です。"
+if ! ruby_version_supported "$CURRENT_RUBY_VERSION"; then
+  fail_check "Ruby 4.0系を使用してください。現在のバージョンは${CURRENT_RUBY_VERSION}です。"
 fi
 
 if ! bundle check; then
@@ -81,8 +89,12 @@ else
   EVALUATOR_PATH="${APP_ROOT}/tmp/manyo_evaluation/${EVALUATOR_REF}"
   if [[ ! -d "${EVALUATOR_PATH}/.git" ]]; then
     mkdir -p "$(dirname "$EVALUATOR_PATH")"
-    if ! git clone --quiet --depth 1 --branch "$EVALUATOR_REF" "$EVALUATOR_REPOSITORY" "$EVALUATOR_PATH"; then
-      fail_check "評価コード\`${EVALUATOR_REF}\`を取得できませんでした。ネットワーク接続を確認してください。"
+    if ! git init --quiet "$EVALUATOR_PATH" ||
+       ! git -C "$EVALUATOR_PATH" remote add origin "$EVALUATOR_REPOSITORY" ||
+       ! git -C "$EVALUATOR_PATH" fetch --quiet --depth 1 origin "$EVALUATOR_REF" ||
+       ! git -C "$EVALUATOR_PATH" checkout --quiet --detach FETCH_HEAD; then
+      rm -rf "$EVALUATOR_PATH"
+      fail_check "評価コード\`${EVALUATOR_REF}\`を取得できませんでした。ネットワーク接続と評価コードのrefを確認してください。"
     fi
   fi
 fi
