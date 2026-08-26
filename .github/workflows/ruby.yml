@@ -84,5 +84,8 @@ jobs:
       - name: Install JavaScript dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Compile test webpack assets
+        run: bundle exec rails webpacker:compile
+
       - name: Run learner tests and requirement evaluation
         run: bin/check "${{ inputs.step || github.ref_name }}"
