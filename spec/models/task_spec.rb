@@ -84,13 +84,25 @@ RSpec.describe 'タスクモデル機能', type: :model do
 
         expect(task).not_to be_valid
       end
-    end    
+    end
   end
 
   describe '検索機能' do
-    let!(:first_task) { FactoryBot.create(:task) }
-    let!(:second_task) { FactoryBot.create(:second_task) }
-    let!(:third_task) { FactoryBot.create(:third_task) }
+    before do
+      Task.delete_all
+    end
+
+    let!(:first_task) do
+      FactoryBot.create(:task)
+    end
+
+    let!(:second_task) do
+      FactoryBot.create(:second_task)
+    end
+
+    let!(:third_task) do
+      FactoryBot.create(:third_task)
+    end
 
     context 'scopeメソッドでタイトルのあいまい検索をした場合' do
       it '検索ワードを含むタスクが絞り込まれる' do
@@ -109,6 +121,7 @@ RSpec.describe 'タスクモデル機能', type: :model do
         expect(Task.search_status('完了').count).to eq 1
       end
     end
+
     context 'scopeメソッドでタイトルのあいまい検索とステータス検索をした場合' do
       it '検索ワードをタイトルに含み、かつステータスに完全一致するタスクが絞り込まれる' do
         tasks = Task.search_title('third').search_status('完了')
