@@ -29,7 +29,7 @@ on:
       evaluator_ref:
         description: 固定して使用する評価コードのタグまたはSHA
         required: false
-        default: rails-8.1-v1.0.0
+        default: 35d72d323934e15868280a264c3de4318525adca
         type: string
 
 permissions:
@@ -49,6 +49,7 @@ jobs:
         image: postgres:18.4-alpine
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
+          TZ: UTC
         ports:
           - 5432:5432
         options: >-
@@ -59,9 +60,11 @@ jobs:
 
     env:
       DATABASE_URL: postgres://postgres@localhost:5432/manyo_test
-      MANYO_EVALUATOR_REF: ${{ inputs.evaluator_ref || 'rails-8.1-v1.0.0' }}
+      MANYO_EVALUATOR_REF: ${{ inputs.evaluator_ref || '35d72d323934e15868280a264c3de4318525adca' }}
+      PGTZ: UTC
       RAILS_ENV: test
       SECRET_KEY_BASE: manyo-evaluation-test
+      TZ: UTC
 
     steps:
       - name: Check out learner application
@@ -70,7 +73,6 @@ jobs:
       - name: Set up Ruby and Bundler
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 4.0.5
           bundler-cache: true
 
       - name: Set up Node
