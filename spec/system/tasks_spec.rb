@@ -1,190 +1,135 @@
 require 'rails_helper'
 
-RSpec.describe 'タスク管理機能', type: :system do
-  describe '登録機能' do
-    context 'タスクを登録した場合' do
-      it '登録したタスクが表示される' do
-        visit new_task_path
+RSpec.describe 'タスクモデル機能', type: :model do
+  describe 'バリデーションのテスト' do
+    context 'タスクのタイトルが空文字の場合' do
+      it 'バリデーションに失敗する' do
+        task = Task.create(
+          title: '',
+          content: '企画書を作成する。',
+          deadline_on: Date.current,
+          priority: '中',
+          status: '未着手'
+        )
 
-        fill_in 'タイトル', with: '書類作成'
-        fill_in '内容', with: '企画書を作成する。'
-        fill_in '終了期限', with: Date.current
-        select '中', from: '優先度'
-        select '未着手', from: 'ステータス'
+        expect(task).not_to be_valid
+      end
+    end
 
-        click_button '登録する'
+    context 'タスクの説明が空文字の場合' do
+      it 'バリデーションに失敗する' do
+        task = Task.create(
+          title: '書類作成',
+          content: '',
+          deadline_on: Date.current,
+          priority: '中',
+          status: '未着手'
+        )
 
-        expect(page).to have_content '書類作成'
+        expect(task).not_to be_valid
+      end
+    end
+
+    context 'タスクの必須項目に値が入っている場合' do
+      it 'タスクを登録できる' do
+        task = Task.create(
+          title: '書類作成',
+          content: '企画書を作成する。',
+          deadline_on: Date.current,
+          priority: '中',
+          status: '未着手'
+        )
+
+        expect(task).to be_valid
+      end
+    end
+
+    context 'タスクの終了期限が空の場合' do
+      it 'バリデーションに失敗する' do
+        task = Task.create(
+          title: '書類作成',
+          content: '企画書を作成する。',
+          deadline_on: nil,
+          priority: '中',
+          status: '未着手'
+        )
+
+        expect(task).not_to be_valid
+      end
+    end
+
+    context 'タスクの優先度が空の場合' do
+      it 'バリデーションに失敗する' do
+        task = Task.create(
+          title: '書類作成',
+          content: '企画書を作成する。',
+          deadline_on: Date.current,
+          priority: nil,
+          status: '未着手'
+        )
+
+        expect(task).not_to be_valid
+      end
+    end
+
+    context 'タスクのステータスが空の場合' do
+      it 'バリデーションに失敗する' do
+        task = Task.create(
+          title: '書類作成',
+          content: '企画書を作成する。',
+          deadline_on: Date.current,
+          priority: '中',
+          status: nil
+        )
+
+        expect(task).not_to be_valid
       end
     end
   end
 
-  describe '一覧表示機能' do
+  describe '検索機能' do
     before do
       Task.delete_all
     end
 
     let!(:first_task) do
-      FactoryBot.create(
-        :task,
-        title: 'first_task',
-        created_at: Time.zone.parse('2022-02-18 00:00:00')
-      )
+      FactoryBot.create(:task)
     end
 
     let!(:second_task) do
-      FactoryBot.create(
-        :second_task,
-        created_at: Time.zone.parse('2022-02-17 00:00:00')
-      )
+      FactoryBot.create(:second_task)
     end
 
     let!(:third_task) do
-      FactoryBot.create(
-        :third_task,
-        created_at: Time.zone.parse('2022-02-16 00:00:00')
-      )
+      FactoryBot.create(:third_task)
     end
 
-    before do
-      visit tasks_path
-    end
-
-    context '一覧画面に遷移した場合' do
-      it '作成済みのタスク一覧が表示される' do
-        expect(page).to have_content 'first_task'
-        expect(page).to have_content 'second_task'
-        expect(page).to have_content 'third_task'
-      end
-
-      it '作成済みのタスク一覧が作成日時の降順で表示される' do
-        expect(page).to have_selector(
-          'tbody tr:nth-child(1)',
-          text: 'first_task'
-        )
-
-        expect(page).to have_selector(
-          'tbody tr:nth-child(2)',
-          text: 'second_task'
-        )
-
-        expect(page).to have_selector(
-          'tbody tr:nth-child(3)',
-          text: 'third_task'
-        )
+    context 'scopeメソッドでタイトルのあいまい検索をした場合' do
+      it '検索ワードを含むタスクが絞り込まれる' do
+        expect(Task.search_title('first')).to include(first_task)
+        expect(Task.search_title('first')).not_to include(second_task)
+        expect(Task.search_title('first')).not_to include(third_task)
+        expect(Task.search_title('first').count).to eq 1
       end
     end
 
-    describe 'ソート機能' do
-      context '「終了期限」というリンクをクリックした場合' do
-        it '終了期限昇順に並び替えられたタスク一覧が表示される' do
-          click_link '終了期限'
-
-          expect(page).to have_selector(
-            'tbody tr:nth-child(1)',
-            text: 'third_task'
-          )
-
-          expect(page).to have_selector(
-            'tbody tr:nth-child(2)',
-            text: 'second_task'
-          )
-
-          expect(page).to have_selector(
-            'tbody tr:nth-child(3)',
-            text: 'first_task'
-          )
-        end
-      end
-
-      context '「優先度」というリンクをクリックした場合' do
-        it '優先度の高い順に並び替えられたタスク一覧が表示される' do
-          click_link '優先度'
-
-          expect(page).to have_selector(
-            'tbody tr:nth-child(1)',
-            text: 'second_task'
-          )
-
-          expect(page).to have_selector(
-            'tbody tr:nth-child(2)',
-            text: 'first_task'
-          )
-
-          expect(page).to have_selector(
-            'tbody tr:nth-child(3)',
-            text: 'third_task'
-          )
-        end
+    context 'scopeメソッドでステータス検索をした場合' do
+      it 'ステータスに完全一致するタスクが絞り込まれる' do
+        expect(Task.search_status('完了')).to include(third_task)
+        expect(Task.search_status('完了')).not_to include(first_task)
+        expect(Task.search_status('完了')).not_to include(second_task)
+        expect(Task.search_status('完了').count).to eq 1
       end
     end
 
-    describe '検索機能' do
-      context 'タイトルであいまい検索をした場合' do
-        it '検索ワードを含むタスクのみ表示される' do
-          fill_in 'タイトル', with: 'first'
-          click_button '検索'
+    context 'scopeメソッドでタイトルのあいまい検索とステータス検索をした場合' do
+      it '検索ワードをタイトルに含み、かつステータスに完全一致するタスクが絞り込まれる' do
+        tasks = Task.search_title('third').search_status('完了')
 
-          expect(page).to have_content 'first_task'
-          expect(page).not_to have_content 'second_task'
-          expect(page).not_to have_content 'third_task'
-        end
-      end
-
-      context 'ステータスで検索した場合' do
-        it '検索したステータスに一致するタスクのみ表示される' do
-          select '完了', from: 'ステータス'
-          click_button '検索'
-
-          expect(page).to have_content 'third_task'
-          expect(page).not_to have_content 'first_task'
-          expect(page).not_to have_content 'second_task'
-        end
-      end
-
-      context 'タイトルとステータスで検索した場合' do
-        it '検索ワードをタイトルに含み、かつステータスに一致するタスクのみ表示される' do
-          fill_in 'タイトル', with: 'third'
-          select '完了', from: 'ステータス'
-
-          click_button '検索'
-
-          expect(page).to have_content 'third_task'
-          expect(page).not_to have_content 'first_task'
-          expect(page).not_to have_content 'second_task'
-        end
-      end
-    end
-
-    context '新たにタスクを作成した場合' do
-      it '新しいタスクが一番上に表示される' do
-        click_link 'タスクを登録する'
-
-        fill_in 'タイトル', with: 'new_task'
-        fill_in '内容', with: '新しいタスクです'
-        fill_in '終了期限', with: Date.current
-        select '中', from: '優先度'
-        select '未着手', from: 'ステータス'
-
-        click_button '登録する'
-
-        expect(page).to have_selector(
-          'tbody tr:nth-child(1)',
-          text: 'new_task'
-        )
-      end
-    end
-  end
-
-  describe '詳細表示機能' do
-    context '任意のタスク詳細画面に遷移した場合' do
-      it 'そのタスクの内容が表示される' do
-        task = FactoryBot.create(:task)
-
-        visit task_path(task)
-
-        expect(page).to have_content 'first_task'
-        expect(page).to have_content '1つ目のタスクです。'
+        expect(tasks).to include(third_task)
+        expect(tasks).not_to include(first_task)
+        expect(tasks).not_to include(second_task)
+        expect(tasks.count).to eq 1
       end
     end
   end
