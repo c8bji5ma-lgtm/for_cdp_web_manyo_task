@@ -96,39 +96,57 @@ RSpec.describe "タスクモデル機能", type: :model do
   end
 
   describe "検索機能" do
+    let(:search_user) { FactoryBot.create(:user) }
+
     let!(:first_task) do
-      FactoryBot.create(:task)
+      FactoryBot.create(
+        :task,
+        user: search_user
+      )
     end
 
     let!(:second_task) do
-      FactoryBot.create(:second_task)
+      FactoryBot.create(
+        :second_task,
+        user: search_user
+      )
     end
 
     let!(:third_task) do
-      FactoryBot.create(:third_task)
+      FactoryBot.create(
+        :third_task,
+        user: search_user
+      )
     end
 
     context "scopeメソッドでタイトルのあいまい検索をした場合" do
       it "検索ワードを含むタスクが絞り込まれる" do
-        expect(Task.search_title("first")).to include(first_task)
-        expect(Task.search_title("first")).not_to include(second_task)
-        expect(Task.search_title("first")).not_to include(third_task)
-        expect(Task.search_title("first").count).to eq 1
+        tasks = search_user.tasks.search_title("first")
+
+        expect(tasks).to include(first_task)
+        expect(tasks).not_to include(second_task)
+        expect(tasks).not_to include(third_task)
+        expect(tasks.count).to eq 1
       end
     end
 
     context "scopeメソッドでステータス検索をした場合" do
       it "ステータスに完全一致するタスクが絞り込まれる" do
-        expect(Task.search_status("完了")).to include(third_task)
-        expect(Task.search_status("完了")).not_to include(first_task)
-        expect(Task.search_status("完了")).not_to include(second_task)
-        expect(Task.search_status("完了").count).to eq 1
+        tasks = search_user.tasks.search_status("完了")
+
+        expect(tasks).to include(third_task)
+        expect(tasks).not_to include(first_task)
+        expect(tasks).not_to include(second_task)
+        expect(tasks.count).to eq 1
       end
     end
 
     context "scopeメソッドでタイトルのあいまい検索とステータス検索をした場合" do
       it "検索ワードをタイトルに含み、かつステータスに完全一致するタスクが絞り込まれる" do
-        tasks = Task.search_title("third").search_status("完了")
+        tasks =
+          search_user.tasks
+                     .search_title("third")
+                     .search_status("完了")
 
         expect(tasks).to include(third_task)
         expect(tasks).not_to include(first_task)
