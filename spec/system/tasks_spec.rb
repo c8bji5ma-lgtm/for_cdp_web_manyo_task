@@ -8,6 +8,9 @@ RSpec.describe 'タスク管理機能', type: :system do
 
         fill_in 'タイトル', with: '書類作成'
         fill_in '内容', with: '企画書を作成する。'
+        fill_in '終了期限', with: Date.current
+        select '中', from: '優先度'
+        select '未着手', from: 'ステータス'
 
         click_button '登録する'
 
@@ -31,16 +34,14 @@ RSpec.describe 'タスク管理機能', type: :system do
 
     let!(:second_task) do
       FactoryBot.create(
-        :task,
-        title: 'second_task',
+        :second_task,
         created_at: Time.zone.parse('2022-02-17 00:00:00')
       )
     end
 
     let!(:third_task) do
       FactoryBot.create(
-        :task,
-        title: 'third_task',
+        :third_task,
         created_at: Time.zone.parse('2022-02-16 00:00:00')
       )
     end
@@ -57,11 +58,101 @@ RSpec.describe 'タスク管理機能', type: :system do
       end
 
       it '作成済みのタスク一覧が作成日時の降順で表示される' do
-        task_list = all('tbody tr')
+        expect(page).to have_selector(
+          'tbody tr:nth-child(1)',
+          text: 'first_task'
+        )
 
-        expect(task_list[0]).to have_content 'first_task'
-        expect(task_list[1]).to have_content 'second_task'
-        expect(task_list[2]).to have_content 'third_task'
+        expect(page).to have_selector(
+          'tbody tr:nth-child(2)',
+          text: 'second_task'
+        )
+
+        expect(page).to have_selector(
+          'tbody tr:nth-child(3)',
+          text: 'third_task'
+        )
+      end
+    end
+
+    describe 'ソート機能' do
+      context '「終了期限」というリンクをクリックした場合' do
+        it '終了期限昇順に並び替えられたタスク一覧が表示される' do
+          click_link '終了期限'
+
+          expect(page).to have_selector(
+            'tbody tr:nth-child(1)',
+            text: 'third_task'
+          )
+
+          expect(page).to have_selector(
+            'tbody tr:nth-child(2)',
+            text: 'second_task'
+          )
+
+          expect(page).to have_selector(
+            'tbody tr:nth-child(3)',
+            text: 'first_task'
+          )
+        end
+      end
+
+      context '「優先度」というリンクをクリックした場合' do
+        it '優先度の高い順に並び替えられたタスク一覧が表示される' do
+          click_link '優先度'
+
+          expect(page).to have_selector(
+            'tbody tr:nth-child(1)',
+            text: 'second_task'
+          )
+
+          expect(page).to have_selector(
+            'tbody tr:nth-child(2)',
+            text: 'first_task'
+          )
+
+          expect(page).to have_selector(
+            'tbody tr:nth-child(3)',
+            text: 'third_task'
+          )
+        end
+      end
+    end
+
+    describe '検索機能' do
+      context 'タイトルであいまい検索をした場合' do
+        it '検索ワードを含むタスクのみ表示される' do
+          fill_in 'タイトル', with: 'first'
+          click_button '検索'
+
+          expect(page).to have_content 'first_task'
+          expect(page).not_to have_content 'second_task'
+          expect(page).not_to have_content 'third_task'
+        end
+      end
+
+      context 'ステータスで検索した場合' do
+        it '検索したステータスに一致するタスクのみ表示される' do
+          select '完了', from: 'ステータス'
+          click_button '検索'
+
+          expect(page).to have_content 'third_task'
+          expect(page).not_to have_content 'first_task'
+          expect(page).not_to have_content 'second_task'
+        end
+      end
+
+      context 'タイトルとステータスで検索した場合' do
+        it '検索ワードをタイトルに含み、かつステータスに一致するタスクのみ表示される' do
+          fill_in 'タイトル', with: 'third'
+          select '完了', from: 'ステータス'
+
+          click_button '検索'
+
+          expect(page).to have_content 'third_task'
+          expect(page).not_to have_content 'first_task'
+          expect(page).not_to have_content 'second_task'
+        end
       end
     end
 
@@ -71,12 +162,16 @@ RSpec.describe 'タスク管理機能', type: :system do
 
         fill_in 'タイトル', with: 'new_task'
         fill_in '内容', with: '新しいタスクです'
+        fill_in '終了期限', with: Date.current
+        select '中', from: '優先度'
+        select '未着手', from: 'ステータス'
 
         click_button '登録する'
 
-        task_list = all('tbody tr')
-
-        expect(task_list[0]).to have_content 'new_task'
+        expect(page).to have_selector(
+          'tbody tr:nth-child(1)',
+          text: 'new_task'
+        )
       end
     end
   end
@@ -88,8 +183,8 @@ RSpec.describe 'タスク管理機能', type: :system do
 
         visit task_path(task)
 
-        expect(page).to have_content '書類作成'
-        expect(page).to have_content '企画書を作成する。'
+        expect(page).to have_content 'first_task'
+        expect(page).to have_content '1つ目のタスクです。'
       end
     end
   end
