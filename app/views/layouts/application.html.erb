@@ -10,17 +10,29 @@
   </head>
 
   <body>
-
     <% flash.each do |key, message| %>
       <div>
         <%= message %>
       </div>
     <% end %>
-    
-      <nav>
+
+    <nav>
+      <% if logged_in? %>
+        <% if current_user.admin? %>
+          <%= link_to "ユーザ一覧", admin_users_path, id: "users-index" %>
+          <%= link_to "ユーザを登録する", new_admin_user_path, id: "add-user" %>
+        <% end %>
+
         <%= link_to t("navigation.tasks_index"), tasks_path, id: "tasks-index" %>
         <%= link_to t("navigation.new_task"), new_task_path, id: "new-task" %>
-      </nav>
+        <%= link_to "アカウント設定", user_path(current_user), id: "account-setting" %>
+        <%= link_to "ログアウト", session_path, method: :delete, id: "sign-out" %>
+      <% else %>
+        <%= link_to "アカウント登録", new_user_path, id: "sign-up" %>
+        <%= link_to "ログイン", new_session_path, id: "sign-in" %>
+      <% end %>
+    </nav>
+
     <%= yield %>
   </body>
 </html>

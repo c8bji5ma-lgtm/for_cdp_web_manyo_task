@@ -1,4 +1,6 @@
 class Task < ApplicationRecord
+  belongs_to :user
+
   enum :priority, { "低": 0, "中": 1, "高": 2 }
   enum :status, { "未着手": 0, "着手中": 1, "完了": 2 }
 
@@ -6,7 +8,7 @@ class Task < ApplicationRecord
   scope :sort_deadline_on, -> { order(deadline_on: :asc) }
   scope :sort_priority, -> { order(priority: :desc) }
   scope :search_title, ->(title) { where("title ILIKE ?", "%#{title}%") }
-  scope :search_status, ->(status) { where(status: status) }  
+  scope :search_status, ->(status) { where(status: status) }
 
   validates :title, presence: true
   validates :content, presence: true
