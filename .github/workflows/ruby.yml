@@ -29,7 +29,7 @@ on:
       evaluator_ref:
         description: 固定して使用する評価コードのタグまたはSHA
         required: false
-        default: 35d72d323934e15868280a264c3de4318525adca
+        default: c268aef85d4315c686528b4a4057114aaab4d857
         type: string
 
 permissions:
@@ -60,7 +60,7 @@ jobs:
 
     env:
       DATABASE_URL: postgres://postgres@localhost:5432/manyo_test
-      MANYO_EVALUATOR_REF: ${{ inputs.evaluator_ref || '35d72d323934e15868280a264c3de4318525adca' }}
+      MANYO_EVALUATOR_REF: ${{ inputs.evaluator_ref || 'c268aef85d4315c686528b4a4057114aaab4d857' }}
       PGTZ: UTC
       RAILS_ENV: test
       SECRET_KEY_BASE: manyo-evaluation-test
@@ -83,6 +83,11 @@ jobs:
 
       - name: Install JavaScript dependencies
         run: yarn install --frozen-lockfile
+
+      - name: Show browser test versions
+        run: |
+          google-chrome --version
+          bundle exec ruby -e 'require "selenium-webdriver"; puts "selenium-webdriver #{Selenium::WebDriver::VERSION}"'
 
       - name: Compile test webpack assets
         run: bundle exec rails webpacker:compile
