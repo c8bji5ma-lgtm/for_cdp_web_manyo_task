@@ -2,6 +2,7 @@ class User < ApplicationRecord
   has_secure_password
 
   has_many :tasks, dependent: :destroy
+  has_many :labels, dependent: :destroy
 
   before_validation :downcase_email
   before_update :prevent_last_admin_demotion

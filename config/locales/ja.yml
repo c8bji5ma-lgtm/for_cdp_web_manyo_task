@@ -3,6 +3,7 @@ ja:
     models:
       task: タスク
       user: ユーザ
+      label: ラベル
 
     attributes:
       task:
@@ -19,6 +20,9 @@ ja:
         password: パスワード
         password_confirmation: パスワード（確認）
         admin: 管理者権限
+
+      label:
+        name: 名前
 
     errors:
       models:
@@ -47,6 +51,11 @@ ja:
               too_short: は%{count}文字以上で入力してください
             password_confirmation:
               confirmation: とパスワードの入力が一致しません
+
+        label:
+          attributes:
+            name:
+              blank: を入力してください
 
   errors:
     format: "%{attribute}%{message}"

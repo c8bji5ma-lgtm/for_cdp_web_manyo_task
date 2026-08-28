@@ -6,6 +6,6 @@ class ApplicationSystemSmokeTest < ApplicationSystemTestCase
   test "renders the public error page" do
     visit "/404.html"
 
-    assert_text "The page you were looking for doesn't exist."
+    assert_text "お探しのページは見つかりません。"
   end
 end

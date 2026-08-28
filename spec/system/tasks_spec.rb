@@ -63,6 +63,46 @@ RSpec.describe "タスク管理機能", type: :system do
       )
     end
 
+    let!(:work_label) do
+      FactoryBot.create(
+        :label,
+        user: user,
+        name: "仕事"
+      )
+    end
+
+    let!(:study_label) do
+      FactoryBot.create(
+        :label,
+        user: user,
+        name: "勉強"
+      )
+    end
+
+    let!(:first_task_label) do
+      FactoryBot.create(
+        :task_label,
+        task: first_task,
+        label: work_label
+      )
+    end
+
+    let!(:second_task_label) do
+      FactoryBot.create(
+        :task_label,
+        task: second_task,
+        label: work_label
+      )
+    end
+
+    let!(:third_task_label) do
+      FactoryBot.create(
+        :task_label,
+        task: third_task,
+        label: study_label
+      )
+    end
+
     before do
       login_as(user)
     end
@@ -169,6 +209,18 @@ RSpec.describe "タスク管理機能", type: :system do
           expect(page).to have_content "third_task"
           expect(page).not_to have_content "first_task"
           expect(page).not_to have_content "second_task"
+        end
+      end
+
+      context "ラベルで検索をした場合" do
+        it "そのラベルの付いたタスクがすべて表示される" do
+          select "仕事", from: "ラベル"
+
+          click_button "検索"
+
+          expect(page).to have_content "first_task"
+          expect(page).to have_content "second_task"
+          expect(page).not_to have_content "third_task"
         end
       end
     end

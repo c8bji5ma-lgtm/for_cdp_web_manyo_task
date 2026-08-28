@@ -1,42 +1,76 @@
-<h1><%= t("tasks.edit.title") %></h1>
+<h1 class="mb-4"><%= t("tasks.edit.title") %></h1>
 
 <% if @task.errors.any? %>
-  <ul>
-    <% @task.errors.full_messages.each do |message| %>
-      <li><%= message %></li>
-    <% end %>
-  </ul>
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      <% @task.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
 <% end %>
 
 <%= form_with(model: @task, local: true) do |form| %>
-  <div>
+  <div class="form-group">
     <%= form.label :title, Task.human_attribute_name(:title) %>
-    <%= form.text_field :title %>
+    <%= form.text_field :title, class: "form-control" %>
   </div>
 
-  <div>
+  <div class="form-group">
     <%= form.label :content, Task.human_attribute_name(:content) %>
-    <%= form.text_area :content %>
+    <%= form.text_area :content, class: "form-control" %>
   </div>
 
-  <div>
+  <div class="form-group">
     <%= form.label :deadline_on, "終了期限" %>
-    <%= form.date_field :deadline_on %>
+    <%= form.date_field :deadline_on, class: "form-control" %>
   </div>
 
-  <div>
+  <div class="form-group">
     <%= form.label :priority, "優先度" %>
-    <%= form.select :priority, ["高", "中", "低"] %>
+    <%= form.select :priority,
+                    ["高", "中", "低"],
+                    {},
+                    class: "form-control" %>
   </div>
 
-  <div>
+  <div class="form-group">
     <%= form.label :status, "ステータス" %>
-    <%= form.select :status, ["未着手", "着手中", "完了"] %>
+    <%= form.select :status,
+                    ["未着手", "着手中", "完了"],
+                    {},
+                    class: "form-control" %>
   </div>
 
-  <div>
-    <%= form.submit t("tasks.edit.submit"), id: "update-task" %>
+  <div class="form-group">
+    <%= form.label :label_ids, "ラベル" %>
+
+    <% current_user.labels.each do |label| %>
+      <div class="form-check">
+        <%= form.check_box :label_ids,
+                           {
+                             multiple: true,
+                             include_hidden: false,
+                             checked: @task.label_ids.include?(label.id),
+                             class: "form-check-input"
+                           },
+                           label.id %>
+
+        <span class="form-check-label">
+          <%= label.name %>
+        </span>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.submit t("tasks.edit.submit"),
+                    id: "update-task",
+                    class: "btn btn-primary" %>
   </div>
 <% end %>
 
-<%= link_to t("tasks.edit.back"), task_path(@task), id: "back" %>
+<%= link_to t("tasks.edit.back"),
+            task_path(@task),
+            id: "back",
+            class: "btn btn-secondary" %>
