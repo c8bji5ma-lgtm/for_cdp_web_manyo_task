@@ -2,20 +2,24 @@
 require 'spec_helper'
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'
+
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
+
 # Uncomment the line below in case you have `--require rails_helper` in the `.rspec` file
 # that will avoid rails generators crashing because migrations haven't been run yet
 # return unless Rails.env.test?
+
 require 'rspec/rails'
+
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
 # run as spec files by default. This means that files in spec/support that end
 # in _spec.rb will both be required and run as specs, causing the specs to be
-# run twice. It is recommended that you do not name files matching this glob to
-# end with _spec.rb. You can configure this pattern with the --pattern
+# run twice. It is recommended that you do not name files matching this glob
+# to end with _spec.rb. You can configure this pattern with the --pattern
 # option on the command line or in ~/.rspec, .rspec or `.rspec-local`.
 #
 # The following line is provided for convenience purposes. It has the downside
@@ -34,6 +38,7 @@ begin
 rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
+
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
@@ -44,6 +49,19 @@ RSpec.configure do |config|
   # examples within a transaction, remove the following line or assign false
   # instead of true.
   config.use_transactional_fixtures = true
+
+  # System Specでは実際のブラウザを使ってテストする
+  config.before(:each, type: :system) do
+    driven_by :selenium,
+              using: :headless_chrome,
+              screen_size: [1400, 1400] do |options|
+      # テスト中にChromeのパスワード関連UIが
+      # WebDriverの操作を邪魔しないようにする
+      options.add_preference("credentials_enable_service", false)
+      options.add_preference("profile.password_manager_enabled", false)
+      options.add_preference("profile.password_manager_leak_detection", false)
+    end
+  end
 
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false
@@ -67,6 +85,7 @@ RSpec.configure do |config|
 
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
+
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
 end
