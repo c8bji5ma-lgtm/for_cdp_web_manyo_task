@@ -13,6 +13,17 @@ class TasksController < ApplicationController
       if params[:search][:status].present?
         @tasks = @tasks.search_status(params[:search][:status])
       end
+
+      if params[:search][:label].present?
+        label = current_user.labels.find_by(id: params[:search][:label])
+
+        @tasks =
+          if label.present?
+            @tasks.where(id: label.tasks.select(:id))
+          else
+            @tasks.none
+          end
+      end
     end
 
     @tasks =
@@ -72,12 +83,20 @@ class TasksController < ApplicationController
   end
 
   def task_params
-    params.require(:task).permit(
+    permitted_params = params.require(:task).permit(
       :title,
       :content,
       :deadline_on,
       :priority,
-      :status
+      :status,
+      label_ids: []
     )
+
+    permitted_params[:label_ids] =
+      current_user.labels.where(
+        id: permitted_params[:label_ids] || []
+      ).pluck(:id)
+
+    permitted_params
   end
 end

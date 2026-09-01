@@ -1,27 +1,52 @@
-<h1><%= t("tasks.index.title") %></h1>
+<h1 class="mb-4"><%= t("tasks.index.title") %></h1>
 
-<%= form_with url: tasks_path, scope: :search, method: :get, local: true do |form| %>
-  <div>
-    <%= form.label :title, "タイトル" %>
-    <%= form.text_field :title, value: params.dig(:search, :title) %>
-  </div>
+<%= form_with url: tasks_path,
+              scope: :search,
+              method: :get,
+              local: true do |form| %>
 
-  <div>
-    <%= form.label :status, "ステータス" %>
-    <%= form.select :status,
-                    Task.statuses.keys,
-                    { include_blank: true, selected: params.dig(:search, :status) } %>
-  </div>
+  <div class="form-row align-items-end mb-4">
+    <div class="form-group col-md-4">
+      <%= form.label :title, "タイトル" %>
+      <%= form.text_field :title,
+                          value: params.dig(:search, :title),
+                          class: "form-control" %>
+    </div>
 
-  <div>
-    <%= form.submit "検索", id: "search_task" %>
+    <div class="form-group col-md-3">
+      <%= form.label :status, "ステータス" %>
+      <%= form.select :status,
+                      Task.statuses.keys,
+                      {
+                        include_blank: true,
+                        selected: params.dig(:search, :status)
+                      },
+                      class: "form-control" %>
+    </div>
+
+    <div class="form-group col-md-3">
+      <%= form.label :label, "ラベル" %>
+      <%= form.select :label,
+                      current_user.labels.map { |label| [label.name, label.id] },
+                      {
+                        include_blank: true,
+                        selected: params.dig(:search, :label)
+                      },
+                      class: "form-control" %>
+    </div>
+
+    <div class="form-group col-md-2">
+      <%= form.submit "検索",
+                      id: "search_task",
+                      class: "btn btn-primary btn-block" %>
+    </div>
   </div>
 <% end %>
 
 <%= paginate @tasks %>
 
-<table>
-  <thead>
+<table class="table table-striped table-bordered">
+  <thead class="thead-light">
     <tr>
       <th><%= Task.human_attribute_name(:title) %></th>
       <th><%= Task.human_attribute_name(:content) %></th>
@@ -59,13 +84,13 @@
         <td>
           <%= link_to t("tasks.index.show"),
                       task_path(task),
-                      class: "show-task" %>
+                      class: "show-task btn btn-info btn-sm" %>
         </td>
 
         <td>
           <%= link_to t("tasks.index.edit"),
                       edit_task_path(task),
-                      class: "edit-task" %>
+                      class: "edit-task btn btn-warning btn-sm" %>
         </td>
 
         <td>
@@ -73,7 +98,7 @@
                       task_path(task),
                       method: :delete,
                       data: { confirm: t("tasks.index.confirm_destroy") },
-                      class: "destroy-task" %>
+                      class: "destroy-task btn btn-danger btn-sm" %>
         </td>
       </tr>
     <% end %>
