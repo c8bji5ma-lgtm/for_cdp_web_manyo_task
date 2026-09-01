@@ -1,5 +1,5 @@
-class AddNotNullConstraintToLabelsName < ActiveRecord::Migration[8.1]
+class AddUserIdToTasks < ActiveRecord::Migration[8.1]
   def change
-    change_column_null :labels, :name, false
+    add_reference :tasks, :user, foreign_key: true, index: true
   end
 end
